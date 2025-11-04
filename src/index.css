@@ -320,3 +320,7 @@ label {
   font-weight: 700;
   margin-right: 3px;
 }
+
+.ant-table-measure-row {
+  display: none;
+}

@@ -14,7 +14,6 @@ export const TableColumns = (actionHandlers) => {
     showJuryModal,
     showEditModal,
     handleReject,
-    directAccept,
   } = actionHandlers;
 
   //   const handleRejectConfirm = (record) => {
@@ -38,7 +37,7 @@ export const TableColumns = (actionHandlers) => {
       width: 60,
     },
     {
-      title: "Misuse Name",
+      title: "Initiator Name",
       dataIndex: "initiatorName",
       key: "initiatorName",
       align: "center",
@@ -86,8 +85,8 @@ export const TableColumns = (actionHandlers) => {
       align: "center",
       render: (_, record) => (
         <div className="flex justify-center gap-2">
-          {/* PDF View Button */}
-          <Tooltip title="View PDF">
+          {/* Details Button - Always visible */}
+          <Tooltip title="View Details">
             <Button
               type="primary"
               onClick={() => showPDFModal(record)}
@@ -97,11 +96,11 @@ export const TableColumns = (actionHandlers) => {
             </Button>
           </Tooltip>
 
-          {/* Accept Button - Only for Pending/Running submissions */}
-          {(record.status === "Running" || record.status === "Pending") && (
-            <Tooltip title="Send to Jury">
+          {/* Proven Button - For all non-finalized cases */}
+          {!["Rejected", "Finalized"].includes(record.status) && (
+            <Tooltip title="Mark as Proven">
               <Button
-                onClick={() => directAccept(record)}
+                onClick={() => showAcceptModal(record)}
                 size="large"
                 style={{
                   backgroundColor: "#52c41a",
@@ -109,31 +108,31 @@ export const TableColumns = (actionHandlers) => {
                   color: "white",
                 }}
               >
-                Accept
+                Proven
               </Button>
             </Tooltip>
           )}
 
-          {/* Final Review Button */}
-          {record.status === "Final Review" && (
-            <Tooltip title="Final Edit">
+          {/* Unable to Decide Button - For all non-finalized cases */}
+          {!["Rejected", "Finalized"].includes(record.status) && (
+            <Tooltip title="Unable to Decide">
               <Button
-                onClick={() => showEditModal(record)}
+                onClick={() => showJuryModal(record)}
                 size="large"
                 style={{
-                  backgroundColor: "#13c2c2",
-                  borderColor: "#13c2c2",
+                  backgroundColor: "#faad14",
+                  borderColor: "#faad14",
                   color: "white",
                 }}
               >
-                Final Review
+                Unable to Decide
               </Button>
             </Tooltip>
           )}
 
-          {/* Reject Button - Only if not rejected/finalized/sent */}
-          {record.status === "Pending" && (
-            <Tooltip title="Reject">
+          {/* Disproven Button - For all non-finalized cases */}
+          {!["Rejected", "Finalized"].includes(record.status) && (
+            <Tooltip title="Mark as Disproven">
               <Button
                 onClick={() => handleReject(record)}
                 size="large"
@@ -143,7 +142,7 @@ export const TableColumns = (actionHandlers) => {
                   color: "white",
                 }}
               >
-                Reject
+                Disproven
               </Button>
             </Tooltip>
           )}

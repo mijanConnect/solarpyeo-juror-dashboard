@@ -10,14 +10,15 @@ export const sampleData = [
     status: "Pending",
     submissionType: "Initial Submission",
     submittedDate: "2024-01-15",
-    description: "Medical malpractice case regarding surgical procedure complications",
+    description:
+      "Medical malpractice case regarding surgical procedure complications",
     juryFeedback: [],
     caseDetails: {
       patientInfo: "Patient Age: 45, Gender: Male",
       incidentDate: "2024-01-10",
       allegations: "Improper surgical procedure causing complications",
-      evidence: "Medical records, surgical notes, witness statements"
-    }
+      evidence: "Medical records, surgical notes, witness statements",
+    },
   },
   {
     id: 2,
@@ -32,14 +33,22 @@ export const sampleData = [
     submittedDate: "2024-02-01",
     description: "Response to allegations regarding patient care standards",
     juryFeedback: [
-      { jurorId: 1, decision: "approve", reason: "Evidence supports the respondent's position" },
-      { jurorId: 2, decision: "approve", reason: "Professional standards were maintained" }
+      {
+        jurorId: 1,
+        decision: "approve",
+        reason: "Evidence supports the respondent's position",
+      },
+      {
+        jurorId: 2,
+        decision: "approve",
+        reason: "Professional standards were maintained",
+      },
     ],
     caseDetails: {
       incidentDate: "2024-01-25",
       allegations: "Unprofessional behavior with patient",
-      evidence: "Patient complaints, staff testimonies"
-    }
+      evidence: "Patient complaints, staff testimonies",
+    },
   },
   {
     id: 3,
@@ -54,16 +63,28 @@ export const sampleData = [
     submittedDate: "2024-01-20",
     description: "Additional evidence submission for ongoing case review",
     juryFeedback: [
-      { jurorId: 1, decision: "approve", reason: "Clear evidence of proper prescription practices" },
-      { jurorId: 2, decision: "approve", reason: "All medical protocols followed correctly" },
-      { jurorId: 3, decision: "approve", reason: "No evidence of malpractice found" }
+      {
+        jurorId: 1,
+        decision: "approve",
+        reason: "Clear evidence of proper prescription practices",
+      },
+      {
+        jurorId: 2,
+        decision: "approve",
+        reason: "All medical protocols followed correctly",
+      },
+      {
+        jurorId: 3,
+        decision: "approve",
+        reason: "No evidence of malpractice found",
+      },
     ],
     caseDetails: {
       incidentDate: "2024-01-15",
       allegations: "Inappropriate prescription practices",
-      evidence: "Prescription records, patient medical history"
-    }
-  }
+      evidence: "Prescription records, patient medical history",
+    },
+  },
 ];
 
 // Utility function for status colors

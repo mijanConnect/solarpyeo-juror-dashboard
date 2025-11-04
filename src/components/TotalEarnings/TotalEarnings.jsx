@@ -256,7 +256,7 @@ const TotalEarnings = () => {
       </Row> */}
 
       {/* Date Range Filter */}
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-2 flex justify-between items-center">
         <div className="flex items-center gap-4">
           {/* <span className="text-sm font-medium">Date Range:</span> */}
           <Select

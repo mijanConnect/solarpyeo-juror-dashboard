@@ -68,65 +68,50 @@ const RespondentSubmission = () => {
   };
 
   // Action handlers
-  const handleAcceptSubmit = () => {
+  const handleAcceptSubmit = (explanation) => {
     const updatedData = data.map((item) =>
-      item.id === selectedRecord.id ? { ...item, status: "Sent to Jury" } : item
+      item.id === selectedRecord.id
+        ? {
+            ...item,
+            status: "Proven",
+            provenReason: explanation,
+            provenDate: new Date().toISOString(),
+          }
+        : item
     );
     setData(updatedData);
     setIsAcceptModalVisible(false);
-    message.success("Case sent to jury for review!");
+    message.success("Case marked as proven!");
   };
 
-  // Accept Function with Confirmation
-  const directAccept = (record) => {
-    Modal.confirm({
-      title: "Are you sure?",
-      content: "Do you want to accept this submission and send it to jury?",
-      okText: "Yes, Accept",
-      cancelText: "Cancel",
-      onOk() {
-        const updatedData = data.map((item) =>
-          item.id === record.id ? { ...item, status: "Sent to Jury" } : item
-        );
-        setData(updatedData);
-        message.success("Case sent to jury successfully!");
-      },
-    });
-  };
-
-  const handleJurySubmit = (juryDecision, juryReason) => {
-    if (!juryDecision || !juryReason.trim()) {
-      message.error("Please provide both decision and reason!");
+  const handleJurySubmit = (decision, explanation) => {
+    if (!explanation.trim()) {
+      message.error("Please provide an explanation!");
       return false;
     }
 
     const updatedData = data.map((item) => {
       if (item.id === selectedRecord.id) {
-        const newFeedback = [
-          ...(item.juryFeedback || []),
-          {
-            jurorId: (item.juryFeedback?.length || 0) + 1,
-            decision: juryDecision,
-            reason: juryReason,
-          },
-        ];
-
-        const newVoteCount = newFeedback.length;
-        const newStatus =
-          newVoteCount === 3 ? "Final Review" : "Under Jury Review";
-
         return {
           ...item,
-          juryFeedback: newFeedback,
-          jurorVote: `${newVoteCount} of 3`,
-          status: newStatus,
+          status: "Unable to Decide",
+          unableToDecideReason: explanation,
+          unableToDecideDate: new Date().toISOString(),
+          history: [
+            ...(item.history || []),
+            {
+              date: new Date().toISOString(),
+              action: "Unable to Decide",
+              explanation: explanation,
+            },
+          ],
         };
       }
       return item;
     });
 
     setData(updatedData);
-    message.success("Jury decision submitted successfully!");
+    message.success("Case marked as Unable to Decide!");
     return true;
   };
 
@@ -150,17 +135,51 @@ const RespondentSubmission = () => {
   };
 
   const handleReject = (record) => {
+    let explanation = "";
+
     Modal.confirm({
-      title: "Are you sure?",
-      content: "Do you want to reject this submission?",
-      okText: "Yes, Reject",
+      title: "Mark as Disproven",
+      content: (
+        <div>
+          <p>
+            You are marking this case as <strong>Disproven</strong>.
+          </p>
+          <div style={{ marginTop: "16px" }}>
+            <label>Explanation (Required):</label>
+            <Input.TextArea
+              rows={4}
+              placeholder="Please explain why this case is disproven. This explanation will be included in the case history."
+              onChange={(e) => (explanation = e.target.value)}
+              maxLength={500}
+            />
+          </div>
+        </div>
+      ),
+      okText: "Confirm Disproven",
       cancelText: "Cancel",
+      width: 600,
       onOk() {
+        if (!explanation.trim()) {
+          message.error(
+            "Please provide an explanation for why this case is disproven."
+          );
+          return Promise.reject();
+        }
+
         const updatedData = data.map((item) =>
-          item.id === record.id ? { ...item, status: "Rejected" } : item
+          item.id === record.id
+            ? {
+                ...item,
+                status: "Disproven",
+                disproveReason: explanation,
+                disproveDate: new Date().toISOString(),
+              }
+            : item
         );
+
         setData(updatedData);
-        message.success("Submission rejected!");
+        message.success("Case marked as disproven!");
+        return Promise.resolve();
       },
     });
   };
@@ -171,7 +190,6 @@ const RespondentSubmission = () => {
     showJuryModal,
     showEditModal,
     handleReject,
-    directAccept,
   };
 
   const components = {
@@ -235,18 +253,18 @@ const RespondentSubmission = () => {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto mt-3">
-        <div className="overflow-x-auto min-w-full p-0">
-          <Table
-            components={components}
-            columns={columns}
-            dataSource={filteredData}
-            rowKey="id"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 1300 }} // scroll value as fixed px
-            className="custom-table"
-          />
-        </div>
+      <div className="responsive-table">
+        <Table
+          components={components}
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="id"
+          pagination={{
+            pageSize: 10,
+          }}
+          scroll={{ x: "max-content" }}
+          className="custom-table"
+        />
       </div>
 
       {/* Modals */}
