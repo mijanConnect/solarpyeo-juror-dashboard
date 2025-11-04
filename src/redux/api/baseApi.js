@@ -18,57 +18,18 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
-// Wrapper to handle automatic token refresh on 401
+// Wrapper to handle 401 errors - clear tokens and redirect to login
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  // If we get a 401, try to refresh the token
+  // If we get a 401 (unauthorized), clear tokens and redirect to login
   if (result?.error && result.error.status === 401) {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) {
-        // No refresh token available, clear tokens and return error
-        localStorage.removeItem("token");
-        return result;
-      }
+    // Clear all auth tokens
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
 
-      // Attempt to refresh the access token
-      const refreshResult = await rawBaseQuery(
-        {
-          url: "/auth/refresh-token",
-          method: "POST",
-          body: { refreshToken },
-        },
-        api,
-        extraOptions
-      );
-
-      if (refreshResult?.error) {
-        // Refresh failed, clear all tokens
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        return result;
-      }
-
-      // Extract new tokens from response
-      const refreshData = refreshResult.data || {};
-      const tokenPayload = refreshData.data || refreshData;
-      const newAccessToken = tokenPayload.accessToken;
-      const newRefreshToken = tokenPayload.refreshToken;
-
-      if (newAccessToken) {
-        // Save new tokens
-        localStorage.setItem("token", newAccessToken);
-        if (newRefreshToken) {
-          localStorage.setItem("refreshToken", newRefreshToken);
-        }
-
-        // Retry the original request with new token
-        result = await rawBaseQuery(args, api, extraOptions);
-      }
-    } catch (err) {
-      console.error("Error refreshing token:", err);
-    }
+    // Redirect to login page
+    window.location.href = "/auth/login";
   }
 
   return result;
