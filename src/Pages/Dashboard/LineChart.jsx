@@ -134,9 +134,9 @@ const LineChart = () => {
   };
 
   return (
-    <div style={{ width: "100%", height: "250px" }} className="text-white">
+    <div style={{ width: "100%", height: "250px" }} className="text-white p-4">
       <div className="flex items-center justify-between">
-        <h2 className="mb-4 text-xl font-bold text-white">Total Revenue</h2>
+        <h2 className="mb-4 text-xl font-bold text-black">Total Revenue</h2>
         {/* <select
           className="px-4 py-2 text-white bg-transparent border-2 rounded-lg outline-"
           value={yearFilter}

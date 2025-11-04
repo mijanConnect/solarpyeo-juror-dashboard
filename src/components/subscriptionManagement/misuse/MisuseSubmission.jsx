@@ -7,18 +7,22 @@ import {
   Tag,
   Tooltip,
   message,
-  Modal
+  Modal,
 } from "antd";
 import { FaFilePdf, FaEdit } from "react-icons/fa";
 import { MdGavel } from "react-icons/md";
 import { sampleData } from "./sampleData";
 import { TableColumns } from "./CulomsTable";
-import { AcceptModal, EditModal, JuryModal, PDFModal } from "./GeneratePDFContent ";
-
+import {
+  AcceptModal,
+  EditModal,
+  JuryModal,
+  PDFModal,
+} from "./GeneratePDFContent ";
 
 const { Option } = Select;
 
-const SubmissionManagementCom = () => {
+const MisuseSubmission = () => {
   const [data, setData] = useState(sampleData);
   const [searchText, setSearchText] = useState("");
   const [submissionType, setSubmissionType] = useState("All");
@@ -64,45 +68,65 @@ const SubmissionManagementCom = () => {
   };
 
   // Action handlers
-  const handleAcceptSubmit = (explanation) => {
+  const handleAcceptSubmit = () => {
     const updatedData = data.map((item) =>
-      item.id === selectedRecord.id ? { 
-        ...item, 
-        status: "Proven",
-        provenReason: explanation,
-        provenDate: new Date().toISOString()
-      } : item
+      item.id === selectedRecord.id ? { ...item, status: "Sent to Jury" } : item
     );
     setData(updatedData);
     setIsAcceptModalVisible(false);
-    message.success("Case marked as proven!");
+    message.success("Case sent to jury for review!");
   };
 
-  const handleJurySubmit = (decision, explanation) => {
-    if (!explanation.trim()) {
-      message.error("Please provide an explanation!");
+  // Accept Function with Confirmation
+  const directAccept = (record) => {
+    Modal.confirm({
+      title: "Are you sure?",
+      content: "Do you want to accept this submission and send it to jury?",
+      okText: "Yes, Accept",
+      cancelText: "Cancel",
+      onOk() {
+        const updatedData = data.map((item) =>
+          item.id === record.id ? { ...item, status: "Sent to Jury" } : item
+        );
+        setData(updatedData);
+        message.success("Case sent to jury successfully!");
+      },
+    });
+  };
+
+  const handleJurySubmit = (juryDecision, juryReason) => {
+    if (!juryDecision || !juryReason.trim()) {
+      message.error("Please provide both decision and reason!");
       return false;
     }
 
     const updatedData = data.map((item) => {
       if (item.id === selectedRecord.id) {
+        const newFeedback = [
+          ...(item.juryFeedback || []),
+          {
+            jurorId: (item.juryFeedback?.length || 0) + 1,
+            decision: juryDecision,
+            reason: juryReason,
+          },
+        ];
+
+        const newVoteCount = newFeedback.length;
+        const newStatus =
+          newVoteCount === 3 ? "Final Review" : "Under Jury Review";
+
         return {
           ...item,
-          status: "Unable to Decide",
-          unableToDecideReason: explanation,
-          unableToDecideDate: new Date().toISOString(),
-          history: [...(item.history || []), {
-            date: new Date().toISOString(),
-            action: "Unable to Decide",
-            explanation: explanation
-          }]
+          juryFeedback: newFeedback,
+          jurorVote: `${newVoteCount} of 3`,
+          status: newStatus,
         };
       }
       return item;
     });
-    
+
     setData(updatedData);
-    message.success("Case marked as Unable to Decide!");
+    message.success("Jury decision submitted successfully!");
     return true;
   };
 
@@ -114,58 +138,30 @@ const SubmissionManagementCom = () => {
           status: "Finalized",
           finalDecisions: decisions,
           adminComments: formValues.adminComments,
-          finalResult: formValues.finalResult
+          finalResult: formValues.finalResult,
         };
       }
       return item;
     });
-    
+
     setData(updatedData);
     message.success("Final decision submitted successfully!");
     return true;
   };
 
   const handleReject = (record) => {
-    let explanation = "";
-    
     Modal.confirm({
-      title: 'Mark as Disproven',
-      content: (
-        <div>
-          <p>You are marking this case as <strong>Disproven</strong>.</p>
-          <div style={{ marginTop: '16px' }}>
-            <label>Explanation (Required):</label>
-            <Input.TextArea 
-              rows={4} 
-              placeholder="Please explain why this case is disproven. This explanation will be included in the case history."
-              onChange={(e) => explanation = e.target.value}
-              maxLength={500}
-            />
-          </div>
-        </div>
-      ),
-      okText: 'Confirm Disproven',
-      cancelText: 'Cancel',
-      width: 600,
+      title: "Are you sure?",
+      content: "Do you want to reject this submission?",
+      okText: "Yes, Reject",
+      cancelText: "Cancel",
       onOk() {
-        if (!explanation.trim()) {
-          message.error("Please provide an explanation for why this case is disproven.");
-          return Promise.reject();
-        }
-        
         const updatedData = data.map((item) =>
-          item.id === record.id ? { 
-            ...item, 
-            status: "Disproven",
-            disproveReason: explanation,
-            disproveDate: new Date().toISOString()
-          } : item
+          item.id === record.id ? { ...item, status: "Rejected" } : item
         );
-        
         setData(updatedData);
-        message.success("Case marked as disproven!");
-        return Promise.resolve();
-      }
+        message.success("Submission rejected!");
+      },
     });
   };
 
@@ -174,7 +170,8 @@ const SubmissionManagementCom = () => {
     showAcceptModal,
     showJuryModal,
     showEditModal,
-    handleReject
+    handleReject,
+    directAccept,
   };
 
   const components = {
@@ -212,8 +209,9 @@ const SubmissionManagementCom = () => {
   return (
     <div className="">
       {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
-        <div className="flex items-center justify-between w-full gap-2">
+      <div className="flex justify-between items-end bg-red-300 p-3 rounded-lg mb-4 mt-4">
+        <p className="text-[25px] font-semibold ml-1">Misuse Submissions</p>
+        <div className="flex gap-2">
           <Input
             placeholder="Search by name, email, case type, or submission type"
             value={searchText}
@@ -237,18 +235,18 @@ const SubmissionManagementCom = () => {
       </div>
 
       {/* Table */}
-      <div className="responsive-table">
-        <Table
-          components={components}
-          columns={columns}
-          dataSource={filteredData}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-          }}
-          scroll={{ x: 'max-content' }}
-          className="custom-table"
-        />
+      <div className="flex-1 overflow-auto mt-3">
+        <div className="overflow-x-auto min-w-full p-0">
+          <Table
+            components={components}
+            columns={columns}
+            dataSource={filteredData}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 1300 }} // scroll value as fixed px
+            className="custom-table"
+          />
+        </div>
       </div>
 
       {/* Modals */}
@@ -282,4 +280,4 @@ const SubmissionManagementCom = () => {
   );
 };
 
-export default SubmissionManagementCom;
+export default MisuseSubmission;

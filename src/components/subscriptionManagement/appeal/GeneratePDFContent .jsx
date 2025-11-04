@@ -10,8 +10,9 @@ import {
   Tag,
   message
 } from "antd";
-import { FaPlus, FaMinus } from "react-icons/fa";
+import { FaPlus, FaMinus, FaFilePdf } from "react-icons/fa";
 import { getStatusColor } from "./sampleData";
+import { MdGavel } from "react-icons/md";
 // import { getStatusColor } from '../data/sampleData';
 
 const { TextArea } = Input;
@@ -175,179 +176,179 @@ const generatePDFContent = (record) => {
   return caseTypeTemplates[record.caseType] || caseTypeTemplates["Medical Malpractice"];
 };
 
-// Details Modal Component
-export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
-  <Modal
-    title={`Case Details - ${selectedRecord?.caseType}`}
-    visible={visible}
-    onCancel={onCancel}
-    footer={[
-      <Button key="close" onClick={onCancel}>
-        Close
-      </Button>,
-      <Button 
-        key="print" 
-        type="primary" 
-        onClick={() => window.print()}
-      >
-        Print Details
-      </Button>
-    ]}
-    width={900}
-    style={{ top: 20 }}
-  >
-    {selectedRecord && (
-      <div className="space-y-6">
-        {/* Case Overview */}
-        <Card title="Case Overview" className="shadow-sm">
-          <div className="grid grid-cols-2 gap-4">
-            <div><strong>Case ID:</strong> {selectedRecord.id}</div>
-            <div><strong>Status:</strong> <Tag color={getStatusColor(selectedRecord.status)}>{selectedRecord.status}</Tag></div>
-            <div><strong>Initiator:</strong> {selectedRecord.initiatorName}</div>
-            <div><strong>Respondent:</strong> {selectedRecord.respondentName}</div>
-            <div><strong>Email:</strong> {selectedRecord.email}</div>
-            <div><strong>Moderator:</strong> {selectedRecord.moderatorName}</div>
-            <div><strong>Case Type:</strong> {selectedRecord.caseType}</div>
-            <div><strong>Submission Type:</strong> {selectedRecord.submissionType}</div>
-          </div>
-        </Card>
-        
-        {/* Case Details */}
-        <Card title="Case Details" className="shadow-sm">
-          <div className="space-y-4">
-            {selectedRecord.caseDetails && (
-              <>
-                {selectedRecord.caseDetails.patientInfo && (
-                  <div><strong>Patient Information:</strong> {selectedRecord.caseDetails.patientInfo}</div>
-                )}
-                {selectedRecord.caseDetails.incidentDate && (
-                  <div><strong>Incident Date:</strong> {selectedRecord.caseDetails.incidentDate}</div>
-                )}
-                {selectedRecord.caseDetails.allegations && (
-                  <div><strong>Allegations:</strong> {selectedRecord.caseDetails.allegations}</div>
-                )}
-                {selectedRecord.caseDetails.evidence && (
-                  <div><strong>Evidence:</strong> {selectedRecord.caseDetails.evidence}</div>
-                )}
-              </>
-            )}
-            <div>
-              <strong>Description:</strong>
-              <div className="mt-2 p-4 bg-gray-50 rounded-md">{selectedRecord.description}</div>
-            </div>
-          </div>
-        </Card>
-        
-        {/* Case History */}
-        <Card title="Case History" className="shadow-sm">
-          {/* Proven Status */}
-          {selectedRecord.status === "Proven" && selectedRecord.provenReason && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
-              <h4 className="text-green-700 font-medium mb-2">Proven</h4>
-              <div><strong>Date:</strong> {new Date(selectedRecord.provenDate).toLocaleString()}</div>
-              <div className="mt-2"><strong>Explanation:</strong> {selectedRecord.provenReason}</div>
-            </div>
-          )}
-          
-          {/* Unable to Decide Status */}
-          {selectedRecord.status === "Unable to Decide" && selectedRecord.unableToDecideReason && (
-            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-              <h4 className="text-yellow-700 font-medium mb-2">Unable to Decide</h4>
-              <div><strong>Date:</strong> {new Date(selectedRecord.unableToDecideDate).toLocaleString()}</div>
-              <div className="mt-2"><strong>Explanation:</strong> {selectedRecord.unableToDecideReason}</div>
-            </div>
-          )}
-          
-          {/* Disproven Status */}
-          {selectedRecord.status === "Disproven" && selectedRecord.disproveReason && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
-              <h4 className="text-red-700 font-medium mb-2">Disproven</h4>
-              <div><strong>Date:</strong> {new Date(selectedRecord.disproveDate).toLocaleString()}</div>
-              <div className="mt-2"><strong>Explanation:</strong> {selectedRecord.disproveReason}</div>
-            </div>
-          )}
-          
-          {/* History Records */}
-          {selectedRecord.history && selectedRecord.history.length > 0 ? (
-            <div className="mt-4">
-              <h4 className="font-medium mb-2">Previous Actions</h4>
-              {selectedRecord.history.map((item, index) => (
-                <div key={index} className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                  <div><strong>Action:</strong> {item.action}</div>
-                  <div><strong>Date:</strong> {new Date(item.date).toLocaleString()}</div>
-                  {item.explanation && <div><strong>Details:</strong> {item.explanation}</div>}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-gray-500">No history records available.</div>
-          )}
-        </Card>
-      </div>
-    )}
-  </Modal>
-);
+// PDF Modal Component
+export const PDFModal = ({ visible, onCancel, selectedRecord }) => {
+  const handleDownloadPDF = () => {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Case Report - ${selectedRecord?.caseType}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .section { margin-bottom: 20px; }
+            .label { font-weight: bold; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          ${generatePDFContent(selectedRecord)}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
-// Proven Modal Component
+  return (
+    <Modal
+      title={
+        <div className="flex items-center gap-2">
+          <FaFilePdf className="text-red-500" />
+          <span>Case Details & Documentation - {selectedRecord?.caseType}</span>
+        </div>
+      }
+      visible={visible}
+      onCancel={onCancel}
+      footer={[
+        <Button key="close" onClick={onCancel} size="large">
+          Close
+        </Button>,
+        <Button 
+          key="download" 
+          type="primary" 
+          onClick={handleDownloadPDF}
+          size="large"
+          style={{
+            background: "linear-gradient(135deg, #f5222d 0%, #cf1322 100%)",
+            border: "none"
+          }}
+        >
+          📄 Download PDF
+        </Button>
+      ]}
+      width={1000}
+      // height={800}
+
+      style={{ top: 20 }}
+      className="pdf-modal"
+    >
+      {selectedRecord && (
+        <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+
+          <div 
+            dangerouslySetInnerHTML={{ 
+              __html: generatePDFContent(selectedRecord) 
+            }}
+          />
+        </div>
+      )}
+    </Modal>
+  );
+};
+
+// Accept Modal Component
+
+
+// Accept Modal Component
 export const AcceptModal = ({ visible, onCancel, onOk, selectedRecord }) => {
-  const [explanation, setExplanation] = useState("");
-
-  const handleSubmit = () => {
-    if (!explanation.trim()) {
-      message.error("Please provide an explanation for why this case is proven.");
+  const [confirmationChecked, setConfirmationChecked] = useState(false);
+  
+  const handleOk = () => {
+    if (!confirmationChecked) {
+      message.warning('Please confirm that you have reviewed all case details.');
       return;
     }
-    onOk(explanation);
+    onOk();
+    setConfirmationChecked(false);
   };
 
   const handleCancel = () => {
-    setExplanation("");
+    setConfirmationChecked(false);
     onCancel();
   };
 
   return (
     <Modal
-      title="Mark as Proven"
+      title={
+        <div className="flex items-center gap-2">
+          <span className="text-green-600">✓</span>
+          <span>Approve & Send to Jury Panel</span>
+        </div>
+      }
       visible={visible}
       onCancel={handleCancel}
-      onOk={handleSubmit}
-      width={600}
-      okText="Confirm Proven"
-      cancelText="Cancel"
+      width={700}
+      footer={[
+        <Button key="cancel" onClick={handleCancel}>
+          Cancel
+        </Button>,
+        <Button
+          key="approve"
+          type="primary"
+          onClick={handleOk}
+          disabled={!confirmationChecked}
+          style={{
+            background: confirmationChecked 
+              ? "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)"
+              : undefined,
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "500",
+          }}
+        >
+          Approve & Send to Jury
+        </Button>,
+      ]}
     >
       {selectedRecord && (
         <div className="space-y-4">
-          <Card>
-            <p className="text-lg mb-4">
-              You are marking this case as <strong>Proven</strong>.
-            </p>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="grid grid-cols-2 gap-4">
-                <div><strong>Case Type:</strong> {selectedRecord.caseType}</div>
-                <div><strong>Initiator:</strong> {selectedRecord.initiatorName}</div>
-                <div><strong>Respondent:</strong> {selectedRecord.respondentName}</div>
-                <div><strong>Submission Type:</strong> {selectedRecord.submissionType}</div>
+          <Card 
+            title={
+              <div className="flex items-center gap-2">
+                <span className="text-green-600 text-lg">✅</span>
+                <span>Case Approved for Jury Review</span>
+              </div>
+            }
+            className="border-green-200"
+          >
+            <div className="bg-green-50 p-4 rounded-lg mb-4">
+              <h4 className="font-semibold text-green-800 mb-3">📋 Case Summary</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><strong>Case Type:</strong> <span className="text-blue-700">{selectedRecord.caseType}</span></div>
+                <div><strong>Initiator:</strong> <span className="text-blue-700">{selectedRecord.initiatorName}</span></div>
+                <div><strong>Respondent:</strong> <span className="text-blue-700">{selectedRecord.respondentName}</span></div>
+                <div><strong>Email:</strong> <span className="text-blue-700">{selectedRecord.email}</span></div>
+                <div><strong>Moderator:</strong> <span className="text-blue-700">{selectedRecord.moderatorName}</span></div>
+                <div><strong>Current Status:</strong> <span className="text-blue-700">{selectedRecord.status}</span></div>
               </div>
             </div>
             
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-2">
-                Explanation (Required):
-              </label>
-              <TextArea
-                value={explanation}
-                onChange={(e) => setExplanation(e.target.value)}
-                placeholder="Please explain why this case is proven. This explanation will be included in the case history."
-                rows={4}
-                maxLength={500}
-                showCount
-              />
+            <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+              <h4 className="font-semibold text-green-800 mb-2">📋 Jury Review Process</h4>
+              <ul className="text-green-700 text-sm space-y-1">
+                <li>• 3 qualified jurors will independently review this case</li>
+                <li>• Each juror will provide a detailed decision with reasoning</li>
+                <li>• All jury feedback will be compiled for final administrative review</li>
+                <li>• The case status will be updated to "Sent to Jury" immediately</li>
+              </ul>
             </div>
             
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-700 text-sm">
-                <strong>Note:</strong> This decision will be recorded in the case history and cannot be undone.
-              </p>
+            <div className="mt-4 flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="confirmation" 
+                checked={confirmationChecked}
+                onChange={(e) => setConfirmationChecked(e.target.checked)}
+                className="w-4 h-4 text-green-600"
+              />
+              <label htmlFor="confirmation" className="text-sm text-gray-700">
+                I confirm that I have thoroughly reviewed all case details and supporting documents
+              </label>
             </div>
           </Card>
         </div>
@@ -356,70 +357,192 @@ export const AcceptModal = ({ visible, onCancel, onOk, selectedRecord }) => {
   );
 };
 
-// Unable to Decide Modal Component
+// Jury Modal Component
 export const JuryModal = ({ visible, onCancel, onSubmit, selectedRecord }) => {
-  const [explanation, setExplanation] = useState("");
+  const [juryDecision, setJuryDecision] = useState("");
+  const [juryReason, setJuryReason] = useState("");
+  const [confidenceLevel, setConfidenceLevel] = useState("");
+  const [additionalNotes, setAdditionalNotes] = useState("");
 
   const handleSubmit = () => {
-    if (!explanation.trim()) {
-      message.error("Please provide an explanation for why you are unable to decide.");
+    if (!juryDecision || !juryReason.trim() || !confidenceLevel) {
+      message.error('Please provide decision, detailed reasoning, and confidence level!');
       return;
     }
-    const success = onSubmit("unable_to_decide", explanation);
+    
+    const success = onSubmit(juryDecision, juryReason, confidenceLevel, additionalNotes);
     if (success) {
-      setExplanation("");
+      setJuryDecision("");
+      setJuryReason("");
+      setConfidenceLevel("");
+      setAdditionalNotes("");
     }
   };
 
   const handleCancel = () => {
-    setExplanation("");
+    setJuryDecision("");
+    setJuryReason("");
+    setConfidenceLevel("");
+    setAdditionalNotes("");
     onCancel();
   };
 
+  const currentVoteCount = selectedRecord?.juryFeedback?.length || 0;
+  const remainingVotes = 3 - currentVoteCount;
+
   return (
     <Modal
-      title="Unable to Decide"
+      title={
+        <div className="flex items-center gap-2">
+          <MdGavel className="text-purple-600 text-xl" />
+          <span>Jury Decision Panel - Vote {currentVoteCount + 1} of 3</span>
+        </div>
+      }
       visible={visible}
       onCancel={handleCancel}
       onOk={handleSubmit}
-      width={700}
-      okText="Confirm"
+      width={800}
+      okText="⚖️ Submit Jury Decision"
       cancelText="Cancel"
+      okButtonProps={{
+        style: {
+          background: "linear-gradient(135deg, #722ed1 0%, #531dab 100%)",
+          border: "none",
+          fontSize: "16px",
+          height: "40px"
+        },
+        disabled: !juryDecision || !juryReason.trim() || !confidenceLevel
+      }}
+      cancelButtonProps={{
+        style: {
+          fontSize: "16px",
+          height: "40px"
+        }
+      }}
     >
       {selectedRecord && (
         <div className="space-y-4">
-          <Card title="Case Information">
-            <div className="grid grid-cols-2 gap-4">
-              <div><strong>Case Type:</strong> {selectedRecord.caseType}</div>
-              <div><strong>Initiator:</strong> {selectedRecord.initiatorName}</div>
-              <div><strong>Respondent:</strong> {selectedRecord.respondentName}</div>
-              <div><strong>Status:</strong> {selectedRecord.status}</div>
+          <Card className="border-l-4 border-l-purple-500">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-purple-700 mb-2">Case Under Jury Review</h3>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">Votes Cast: {currentVoteCount}/3</span>
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">Remaining: {remainingVotes}</span>
+              </div>
             </div>
+            
+            <div className="bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-lg border border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-3">Case Information</h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div><strong>Case Type:</strong> <span className="text-gray-700">{selectedRecord.caseType}</span></div>
+                <div><strong>Initiator:</strong> <span className="text-gray-700">{selectedRecord.initiatorName}</span></div>
+                <div><strong>Respondent:</strong> <span className="text-gray-700">{selectedRecord.respondentName}</span></div>
+                <div><strong>Moderator:</strong> <span className="text-gray-700">{selectedRecord.moderatorName}</span></div>
+                <div><strong>Email:</strong> <span className="text-gray-700">{selectedRecord.email}</span></div>
+                <div><strong>Current Status:</strong> <span className="text-gray-700">{selectedRecord.status}</span></div>
+              </div>
+            </div>
+            
+            {/* Previous Jury Decisions */}
+            {selectedRecord.juryFeedback && selectedRecord.juryFeedback.length > 0 && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg">
+                <h4 className="font-semibold text-indigo-800 mb-3">Previous Jury Decisions</h4>
+                {selectedRecord.juryFeedback.map((feedback, index) => (
+                  <div key={index} className="mb-3 p-3 bg-white rounded border border-indigo-100">
+                    <div className="flex items-center gap-2 mb-2">
+                      <strong>Juror {feedback.jurorId}:</strong> 
+                      <Tag color={feedback.decision === 'approve' ? 'green' : 'red'}>
+                        {feedback.decision.toUpperCase()}
+                      </Tag>
+                    </div>
+                    <p className="text-sm text-gray-600">{feedback.reason}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
-          <Card title="Unable to Decide Explanation">
+          <Card className="border-l-4 border-l-blue-500">
+            <h3 className="text-lg font-semibold text-blue-700 mb-4">Your Jury Decision</h3>
+            
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Please explain why you are unable to decide on this case (Required):
+                <label className="block text-sm font-medium mb-2 text-gray-700">Verdict Decision:</label>
+                <Radio.Group 
+                  value={juryDecision} 
+                  onChange={(e) => setJuryDecision(e.target.value)}
+                  className="w-full"
+                >
+                  <Space direction="vertical" className="w-full">
+                    <Radio value="approve" className="p-3 border border-green-200 rounded-lg hover:bg-green-50">
+                      <div>
+                        <strong className="text-green-700">✓ APPROVE</strong>
+                        <p className="text-sm text-gray-600 ml-6">Support the case/claim - Evidence is sufficient</p>
+                      </div>
+                    </Radio>
+                    <Radio value="reject" className="p-3 border border-red-200 rounded-lg hover:bg-red-50">
+                      <div>
+                        <strong className="text-red-700">✗ REJECT</strong>
+                        <p className="text-sm text-gray-600 ml-6">Do not support the case/claim - Evidence is insufficient</p>
+                      </div>
+                    </Radio>
+                  </Space>
+                </Radio.Group>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Confidence Level:</label>
+                <Radio.Group 
+                  value={confidenceLevel} 
+                  onChange={(e) => setConfidenceLevel(e.target.value)}
+                  className="w-full"
+                >
+                  <Space direction="horizontal" className="flex flex-wrap gap-2">
+                    <Radio value="high" className="border border-green-200 rounded px-2 py-1">High Confidence</Radio>
+                    <Radio value="medium" className="border border-yellow-200 rounded px-2 py-1">Medium Confidence</Radio>
+                    <Radio value="low" className="border border-red-200 rounded px-2 py-1">Low Confidence</Radio>
+                  </Space>
+                </Radio.Group>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  Detailed Reasoning (Required):
                 </label>
                 <TextArea
-                  value={explanation}
-                  onChange={(e) => setExplanation(e.target.value)}
-                  placeholder="Explain why you cannot make a decision at this time. For example: insufficient evidence, conflicting information, need for additional expert opinion, etc."
+                  value={juryReason}
+                  onChange={(e) => setJuryReason(e.target.value)}
+                  placeholder="Provide detailed explanation for your decision. Include analysis of evidence, legal considerations, and reasoning behind your verdict..."
                   rows={4}
+                  maxLength={1000}
+                  showCount
+                  className="border-2 border-gray-200 focus:border-blue-400"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  Additional Notes (Optional):
+                </label>
+                <TextArea
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
+                  placeholder="Any additional observations, recommendations, or concerns..."
+                  rows={2}
                   maxLength={500}
                   showCount
+                  className="border-2 border-gray-200 focus:border-blue-400"
                 />
+              </div>
+              
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-yellow-800 text-sm">
+                  <strong>⚠️ Important:</strong> Your decision will be recorded permanently and cannot be changed. 
+                  Please ensure you have thoroughly reviewed all case materials before submitting.
+                </p>
               </div>
             </div>
           </Card>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-yellow-700 text-sm">
-              <strong>Important:</strong> Your explanation will be permanently recorded in the case history. This status can be updated later if more information becomes available.
-            </p>
-          </div>
         </div>
       )}
     </Modal>
@@ -503,14 +626,33 @@ export const EditModal = ({ visible, onCancel, onSubmit, selectedRecord }) => {
             
             {selectedRecord.juryFeedback && selectedRecord.juryFeedback.length > 0 && (
               <div>
-                <h4 style={{ marginBottom: 12 }}>Jury Decisions:</h4>
+                <h4 style={{ marginBottom: 12 }}>Jury Panel Decisions:</h4>
                 {selectedRecord.juryFeedback.map((feedback, index) => (
-                  <div key={index} className="mb-2 p-3 bg-gray-50 rounded">
-                    <strong>Juror {feedback.jurorId}:</strong> 
-                    <Tag color={feedback.decision === 'approve' ? 'green' : 'red'} style={{ marginLeft: 8 }}>
-                      {feedback.decision.toUpperCase()}
-                    </Tag>
-                    <p className="mt-1 text-sm text-gray-600">{feedback.reason}</p>
+                  <div key={index} className="mb-3 p-4 bg-gray-50 rounded-lg border">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <strong>Juror {feedback.jurorId}:</strong> 
+                        <Tag color={feedback.decision === 'approve' ? 'green' : 'red'}>
+                          {feedback.decision.toUpperCase()}
+                        </Tag>
+                        {feedback.confidenceLevel && (
+                          <Tag color={feedback.confidenceLevel === 'high' ? 'blue' : feedback.confidenceLevel === 'medium' ? 'orange' : 'red'}>
+                            {feedback.confidenceLevel.toUpperCase()} CONFIDENCE
+                          </Tag>
+                        )}
+                      </div>
+                      {feedback.timestamp && (
+                        <span className="text-xs text-gray-500">
+                          {new Date(feedback.timestamp).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      <p className="mb-1"><strong>Reasoning:</strong> {feedback.reason}</p>
+                      {feedback.additionalNotes && (
+                        <p className="text-gray-600"><strong>Additional Notes:</strong> {feedback.additionalNotes}</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

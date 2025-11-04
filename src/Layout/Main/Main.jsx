@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 const Main = () => {
   const [collapsed, setCollapsed] = useState(false);
 
-  // Auto-collapse below 992px on mount + resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 992) setCollapsed(true);
@@ -18,22 +17,21 @@ const Main = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-12 h-screen">
+    <div
+      className="min-h-screen w-full flex bg-baseBg overflow-visible container mx-auto"
+      style={{ maxWidth: "1880px", margin: "0 auto" }}
+    >
       {/* Sidebar */}
-      <div className="col-span-2 h-full bg-primary overflow-y-auto">
-        <Sidebar />
-      </div>
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      {/* Main Content */}
-      <div className="col-span-10 flex flex-col">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col transition-all duration-300 overflow-hidden border-l border-primary">
         {/* Header */}
-        <div className="h-[68px] bg-white flex items-center justify-end pr-5">
-          <Header />
-        </div>
+        <Header toggleSidebar={() => setCollapsed(!collapsed)} />
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-auto p-7 bg-white rounded-t-3xl">
-          <div className="min-w-full overflow-x-auto">
+        {/* Page Content */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-baseBg rounded-md">
+          <div className="w-full px-8 py-8">
             <Outlet />
           </div>
         </div>

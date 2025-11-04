@@ -1,14 +1,12 @@
-import React, { useState } from "react";
-import { imageUrl } from "../../redux/api/baseApi";
-import { Link, useNavigate } from "react-router-dom";
-import { FaRegBell } from "react-icons/fa6";
 import { Badge, Button, Dropdown, Menu, Modal } from "antd";
-import { useUser } from "../../provider/User";
-import { IoIosLogOut } from "react-icons/io";
-import Avatar from "../../assets/avatar.png";
+import { useState } from "react";
+import { FaRegBell } from "react-icons/fa6";
+import { Link, useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../components/common/imageUrl";
+import { useUser } from "../../provider/User";
+import { imageUrl } from "../../redux/api/baseApi";
 
-const Header = () => {
+const Header = ({ toggleSidebar, toggleDrawer }) => {
   const { user } = useUser();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -48,7 +46,7 @@ const Header = () => {
   );
 
   return (
-    <div className="flex items-center justify-between gap-5 w-full px-4 rounded-md lg:px-10 shadow-sm py-2 bg-white border-b border-gray-200">
+    <div className="flex items-center justify-between gap-5 w-full px-6 rounded-md shadow-sm py-2 bg-white border-b border-gray-200">
       <div className="py-2">
         <h2 className="font-bold text-xl text-secondary">Admin Dashboard</h2>
         {/* <p className="text-[12px] font-normal text-secondary mt-1">

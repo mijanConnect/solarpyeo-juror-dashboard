@@ -51,14 +51,19 @@ import SignUp from "../Pages/Auth/SignUp";
 import OtpVerification from "../Pages/Auth/OtpVerification";
 import ShopInfo from "../Pages/Auth/ShopInfo";
 import TotalEarnings from "../components/TotalEarnings/TotalEarnings";
-import SubmissionManagementCom from "../components/subscriptionManagement/extra/SubmissionManagement";
+import SubmissionManagementCom from "../components/subscriptionManagement/SubmissionManagement";
+import PrivateRoute from "./ProtectedRoute";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    // element: <ProtectedRoute><Main /></ProtectedRoute> ,
-    element: <Main />,
+    element: (
+      <PrivateRoute>
+        <Main />
+      </PrivateRoute>
+    ),
+    // element: <Main />,
     // element: <Auth />,
 
     children: [

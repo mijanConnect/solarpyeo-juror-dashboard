@@ -18,7 +18,7 @@ import {
 import OrderTable from "../../components/home/OrderTable";
 import SalesLeaderBoard from "../../components/home/SalesLeaderBoard";
 import HomeCard from "../../components/home/HomeCard";
-import { Marchant, Revenue,  } from "../../components/common/Svg";
+import { Marchant, Revenue } from "../../components/common/Svg";
 import { People } from "../../components/common/Svg";
 import { Pending } from "../../components/common/Svg";
 import { SubscriptionManagement } from "../../components/common/Svg";
@@ -101,15 +101,12 @@ const Home = () => {
   };
 
   return (
-    <div className="p-2 md:p-4 space-y-4 md:space-y-6">
+    <div className="">
       <div className="flex flex-col xl:flex-row gap-10 rounded-lg">
         {/* Pie Chart Section */}
         <div className="border border-primary rounded-lg xl:w-2/3">
-
           <RevenueLineChart />
         </div>
-
-     
 
         {/* Card Section */}
         <div className="w-full xl:w-1/3 border border-primary p-6 rounded-lg">
@@ -150,7 +147,9 @@ const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-auto">
             <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-[16px] font-semibold mb-1">Total Report Submit</h2>
+                <h2 className="text-[16px] font-semibold mb-1">
+                  Total Report Submit
+                </h2>
                 <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
                   <Sales className="w-[20px] h-[20px] text-secondary" />
                   $4000
@@ -160,9 +159,7 @@ const Home = () => {
 
             <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-[16px] font-semibold mb-1">
-                  Total User
-                </h2>
+                <h2 className="text-[16px] font-semibold mb-1">Total User</h2>
                 <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
                   <People className="w-[20px] h-[20px] text-secondary" />
                   50
