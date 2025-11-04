@@ -1,4 +1,4 @@
-import { Form, Input, Button } from "antd";
+import { Form, Input } from "antd";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import image4 from "../../assets/image4.png";
@@ -20,7 +20,12 @@ const Login = () => {
 
       if (response.success) {
         const token = response.data.accessToken;
+        const refreshToken = response.data.refreshToken;
+
         localStorage.setItem("token", token);
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
 
         if (response.data.accessToken) {
           navigate("/");
@@ -90,7 +95,7 @@ const Login = () => {
         </div>
 
         <Form.Item style={{ marginBottom: 0 }}>
-          <Button
+          <button
             htmlType="submit"
             type="submit"
             style={{
@@ -105,7 +110,7 @@ const Login = () => {
             className="flex items-center justify-center bg-[#B91C1C] rounded-lg"
           >
             Sign in
-          </Button>
+          </button>
         </Form.Item>
       </Form>
       {/* <Form.Item style={{ marginBottom: 0 }}>
