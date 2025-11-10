@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Table,
   Button,
@@ -19,18 +19,29 @@ import {
   JuryModal,
   PDFModal,
 } from "./GeneratePDFContent ";
+import { useGetInitialSubmissionsQuery } from "../../../redux/apiSlices/initialSubmission";
 
 const { Option } = Select;
 
 const InitialSubmission = () => {
   const [data, setData] = useState(sampleData);
   const [searchText, setSearchText] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [submissionType, setSubmissionType] = useState("All");
   const [isPDFModalVisible, setIsPDFModalVisible] = useState(false);
   const [isAcceptModalVisible, setIsAcceptModalVisible] = useState(false);
   const [isJuryModalVisible, setIsJuryModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+
+  const queryParams = [
+    { name: "page", value: page },
+    { name: "limit", value: limit },
+  ];
+  if (searchText.trim()) {
+    queryParams.push({ name: "fastName", value: searchText.trim() });
+  }
 
   // Filter data
   const filteredData = data.filter((item) => {
@@ -45,6 +56,57 @@ const InitialSubmission = () => {
 
     return matchesSearch && matchesType;
   });
+
+  // Fetch from server using RTK Query
+  const {
+    data: resp,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetInitialSubmissionsQuery(queryParams);
+
+  console.log(resp);
+
+  // Map server response to table-friendly shape
+  const tableData = useMemo(() => {
+    const items = resp?.data || [];
+    return items.map((item, index) => {
+      const initiatorName = item.user?.name || "N/A";
+      const email = item.user?.email || "N/A";
+      const respondentName =
+        [
+          item.respondentFastName,
+          item.respondentMiddleName,
+          item.respondentLastName,
+        ]
+          .filter(Boolean)
+          .join(" ") || "N/A";
+      const caseType = item.typeOfFiling || item.caseId || "N/A";
+      const jurorVote = (item.jurorDecisions?.length || 0) + " of 3";
+      const humanStatus = (item.status || "")
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .split(" ")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
+
+      return {
+        key: item._id,
+        id: (page - 1) * limit + index + 1,
+        initiatorName,
+        email,
+        respondentName,
+        caseType,
+        moderatorName: item.moderatorName || "N/A",
+        jurorVote,
+        status: humanStatus,
+        // keep original machine status for control logic (e.g., PENDING/APPROVED/REJECTED)
+        machineStatus: (item.status || "").toString(),
+        jurorCount: item.jurorDecisions?.length || 0,
+        raw: item,
+      };
+    });
+  }, [resp, page, limit]);
 
   // Modal handlers
   const showPDFModal = (record) => {
@@ -257,7 +319,7 @@ const InitialSubmission = () => {
         <Table
           components={components}
           columns={columns}
-          dataSource={filteredData}
+          dataSource={tableData}
           rowKey="id"
           pagination={{
             pageSize: 10,

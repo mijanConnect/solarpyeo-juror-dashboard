@@ -90,7 +90,7 @@ export const TableColumns = (actionHandlers) => {
             <Button
               type="primary"
               onClick={() => showPDFModal(record)}
-              size="large"
+              size="medium"
             >
               Details
             </Button>
@@ -101,7 +101,7 @@ export const TableColumns = (actionHandlers) => {
             <Tooltip title="Mark as Proven">
               <Button
                 onClick={() => showAcceptModal(record)}
-                size="large"
+                size="medium"
                 style={{
                   backgroundColor: "#52c41a",
                   borderColor: "#52c41a",
@@ -118,7 +118,7 @@ export const TableColumns = (actionHandlers) => {
             <Tooltip title="Unable to Decide">
               <Button
                 onClick={() => showJuryModal(record)}
-                size="large"
+                size="medium"
                 style={{
                   backgroundColor: "#faad14",
                   borderColor: "#faad14",
@@ -135,7 +135,7 @@ export const TableColumns = (actionHandlers) => {
             <Tooltip title="Mark as Disproven">
               <Button
                 onClick={() => handleReject(record)}
-                size="large"
+                size="medium"
                 style={{
                   backgroundColor: "#f5222d",
                   borderColor: "#f5222d",

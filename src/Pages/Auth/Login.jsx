@@ -27,6 +27,12 @@ const Login = () => {
           localStorage.setItem("refreshToken", refreshToken);
         }
 
+        // Dispatch custom event to notify UserProvider of token change
+        // Use setTimeout to ensure localStorage is updated first
+        setTimeout(() => {
+          window.dispatchEvent(new Event("tokenChange"));
+        }, 0);
+
         if (response.data.accessToken) {
           navigate("/");
         }
