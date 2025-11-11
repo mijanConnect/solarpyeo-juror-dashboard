@@ -36,6 +36,15 @@ export const initialSubmissionApi = api.injectEndpoints({
       }),
       invalidatesTags: ["InitialSubmission"],
     }),
+
+    JurySubmission: build.mutation({
+      query: ({ id, body }) => ({
+        url: `/juror/vote/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["InitialSubmission"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -44,4 +53,5 @@ export const {
   useGetInitialSubmissionsQuery,
   useUpdateSubmissionMutation,
   useGetSubmissionByIdQuery,
+  useJurySubmissionMutation,
 } = initialSubmissionApi;

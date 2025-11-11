@@ -11,7 +11,7 @@ export default function SubmmissionManagement() {
   return (
     <div>
       {/* Dropdown to pick which submission component to show */}
-      <div className="">
+      {/* <div className="">
         <div className="flex items-center justify-end gap-2">
           <label
             htmlFor="submission-select"
@@ -33,7 +33,7 @@ export default function SubmmissionManagement() {
             ]}
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Render only the selected component */}
       {selected === "initial" && <InitialSubmission />}

@@ -1,17 +1,11 @@
-import React, { useMemo, useState } from "react";
+import { Input, message, Modal, Select, Table } from "antd";
+import { useMemo, useState } from "react";
+import { useUser } from "../../../provider/User";
 import {
-  Table,
-  Button,
-  Input,
-  Select,
-  Tag,
-  Tooltip,
-  message,
-  Modal,
-} from "antd";
-import { FaFilePdf, FaEdit } from "react-icons/fa";
-import { MdGavel } from "react-icons/md";
-import { sampleData } from "./sampleData";
+  useGetInitialSubmissionsQuery,
+  useJurySubmissionMutation,
+  useUpdateSubmissionMutation,
+} from "../../../redux/apiSlices/initialSubmission";
 import { TableColumns } from "./CulomsTable";
 import {
   AcceptModal,
@@ -19,7 +13,7 @@ import {
   JuryModal,
   PDFModal,
 } from "./GeneratePDFContent ";
-import { useGetInitialSubmissionsQuery } from "../../../redux/apiSlices/initialSubmission";
+import { sampleData } from "./sampleData";
 
 const { Option } = Select;
 
@@ -108,6 +102,9 @@ const InitialSubmission = () => {
     });
   }, [resp, page, limit]);
 
+  const { user } = useUser();
+  const [jurySubmission] = useJurySubmissionMutation();
+
   // Modal handlers
   const showPDFModal = (record) => {
     setSelectedRecord(record);
@@ -130,51 +127,85 @@ const InitialSubmission = () => {
   };
 
   // Action handlers
-  const handleAcceptSubmit = (explanation) => {
-    const updatedData = data.map((item) =>
-      item.id === selectedRecord.id
-        ? {
-            ...item,
-            status: "Proven",
-            provenReason: explanation,
-            provenDate: new Date().toISOString(),
-          }
-        : item
-    );
-    setData(updatedData);
-    setIsAcceptModalVisible(false);
-    message.success("Case marked as proven!");
+  const handleAcceptSubmit = async (explanation) => {
+    if (!selectedRecord?.raw?._id) {
+      message.error("Unable to identify record to update.");
+      return false;
+    }
+
+    try {
+      // Send juror decision to juror vote endpoint
+      const body = {
+        jurorDecisions: [
+          {
+            action: "ACCEPT",
+            comment: explanation,
+          },
+        ],
+      };
+
+      await jurySubmission({ id: selectedRecord.raw._id, body }).unwrap();
+
+      setIsAcceptModalVisible(false);
+      // Clear selected record so table state can refresh cleanly
+      setSelectedRecord(null);
+      message.success("Case marked as Proven!");
+      return true;
+    } catch (err) {
+      console.error("Failed to submit juror vote:", err);
+      message.error("Failed to mark case as proven. Please try again.");
+      return false;
+    }
   };
 
-  const handleJurySubmit = (decision, explanation) => {
+  const handleJurySubmit = async (decision, explanation) => {
     if (!explanation.trim()) {
       message.error("Please provide an explanation!");
       return false;
     }
 
-    const updatedData = data.map((item) => {
-      if (item.id === selectedRecord.id) {
-        return {
-          ...item,
-          status: "Unable to Decide",
-          unableToDecideReason: explanation,
-          unableToDecideDate: new Date().toISOString(),
-          history: [
-            ...(item.history || []),
-            {
-              date: new Date().toISOString(),
-              action: "Unable to Decide",
-              explanation: explanation,
-            },
-          ],
-        };
-      }
-      return item;
-    });
+    if (!selectedRecord?.raw?._id) {
+      message.error("Unable to identify record to update.");
+      return false;
+    }
 
-    setData(updatedData);
-    message.success("Case marked as Unable to Decide!");
-    return true;
+    try {
+      // Map decision to server action codes:
+      // Proven => ACCEPT (handled by handleAcceptSubmit)
+      // Unable to Decide => UNABLETODECIDE
+      // Disproven (handled elsewhere) => REJECTED
+      const raw = (decision || "").toLowerCase();
+      let action;
+      if (
+        raw.includes("unable") ||
+        raw.includes("unable_to_decide") ||
+        raw.includes("pending")
+      ) {
+        action = "UNABLETODECIDE";
+      } else {
+        action = (decision || "UNABLE_TO_DECIDE").toUpperCase();
+      }
+
+      const body = {
+        jurorDecisions: [
+          {
+            action,
+            comment: explanation,
+          },
+        ],
+      };
+
+      await jurySubmission({ id: selectedRecord.raw._id, body }).unwrap();
+
+      setIsJuryModalVisible(false);
+      setSelectedRecord(null);
+      message.success("Case marked as Unable to Decide!");
+      return true;
+    } catch (err) {
+      console.error("Failed to submit jury decision:", err);
+      message.error("Failed to submit jury decision. Please try again.");
+      return false;
+    }
   };
 
   const handleFinalEdit = (decisions, formValues) => {
@@ -220,7 +251,7 @@ const InitialSubmission = () => {
       okText: "Confirm Disproven",
       cancelText: "Cancel",
       width: 600,
-      onOk() {
+      async onOk() {
         if (!explanation.trim()) {
           message.error(
             "Please provide an explanation for why this case is disproven."
@@ -228,20 +259,30 @@ const InitialSubmission = () => {
           return Promise.reject();
         }
 
-        const updatedData = data.map((item) =>
-          item.id === record.id
-            ? {
-                ...item,
-                status: "Disproven",
-                disproveReason: explanation,
-                disproveDate: new Date().toISOString(),
-              }
-            : item
-        );
+        if (!record?.raw?._id) {
+          message.error("Unable to identify record to update.");
+          return Promise.reject();
+        }
 
-        setData(updatedData);
-        message.success("Case marked as disproven!");
-        return Promise.resolve();
+        try {
+          const body = {
+            jurorDecisions: [
+              {
+                action: "REJECT",
+                comment: explanation,
+              },
+            ],
+          };
+
+          await jurySubmission({ id: record.raw._id, body }).unwrap();
+
+          message.success("Case marked as Disproven!");
+          return Promise.resolve();
+        } catch (err) {
+          console.error("Failed to submit disprove decision:", err);
+          message.error("Failed to mark case as disproven. Please try again.");
+          return Promise.reject();
+        }
       },
     });
   };
@@ -284,12 +325,12 @@ const InitialSubmission = () => {
     },
   };
 
-  const columns = TableColumns(actionHandlers);
+  const columns = TableColumns(actionHandlers, user);
 
   return (
     <div className="">
       {/* Filters */}
-      <div className="flex justify-between items-end bg-red-300 p-3 rounded-lg mb-4 mt-4">
+      <div className="flex justify-between items-end bg-red-300 p-3 rounded-lg mb-4">
         <p className="text-[25px] font-semibold ml-1">Initial Submissions</p>
         <div className="flex gap-2">
           <Input
