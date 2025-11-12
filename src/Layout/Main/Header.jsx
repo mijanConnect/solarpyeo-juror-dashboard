@@ -77,11 +77,11 @@ const Header = ({ toggleSidebar, toggleDrawer }) => {
           </div>
         </Dropdown>
         {/* Notification Icon */}
-        <Link to="/notification" className="h-fit mt-[10px]">
+        {/* <Link to="/notification" className="h-fit mt-[10px]">
           <Badge count={5} backgroundColor="#3FC7EE">
             <FaRegBell color="#b91c1c" size={24} />
           </Badge>
-        </Link>
+        </Link> */}
       </div>
 
       {/* Logout Confirmation Modal */}

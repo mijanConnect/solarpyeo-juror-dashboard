@@ -4,7 +4,6 @@ import { useUser } from "../../../provider/User";
 import {
   useGetInitialSubmissionsQuery,
   useJurySubmissionMutation,
-  useUpdateSubmissionMutation,
 } from "../../../redux/apiSlices/initialSubmission";
 import { TableColumns } from "./CulomsTable";
 import {
@@ -65,6 +64,8 @@ const InitialSubmission = () => {
   const tableData = useMemo(() => {
     const items = resp?.data || [];
     return items.map((item, index) => {
+      const key = item._id || index;
+      const caseId = item.caseId || "N/A";
       const initiatorName = item.user?.name || "N/A";
       const email = item.user?.email || "N/A";
       const respondentName =
@@ -77,6 +78,9 @@ const InitialSubmission = () => {
           .join(" ") || "N/A";
       const caseType = item.typeOfFiling || item.caseId || "N/A";
       const jurorVote = (item.jurorDecisions?.length || 0) + " of 3";
+      const allegation =
+        item.allegation ?? item.caseDetails?.allegations ?? "N/A";
+      const evidence = item.evidence || "N/A";
       const humanStatus = (item.status || "")
         .toLowerCase()
         .replace(/_/g, " ")
@@ -86,6 +90,7 @@ const InitialSubmission = () => {
 
       return {
         key: item._id,
+        caseId,
         id: (page - 1) * limit + index + 1,
         initiatorName,
         email,
@@ -93,6 +98,8 @@ const InitialSubmission = () => {
         caseType,
         moderatorName: item.moderatorName || "N/A",
         jurorVote,
+        allegation,
+        evidence,
         status: humanStatus,
         // keep original machine status for control logic (e.g., PENDING/APPROVED/REJECTED)
         machineStatus: (item.status || "").toString(),
@@ -248,7 +255,7 @@ const InitialSubmission = () => {
           </div>
         </div>
       ),
-      okText: "Confirm Disproven",
+      okText: "Confirm",
       cancelText: "Cancel",
       width: 600,
       async onOk() {

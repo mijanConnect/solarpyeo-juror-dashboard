@@ -1,20 +1,40 @@
+import { Button, Card, Form, Input, Modal, Tag, message } from "antd";
 import React, { useState } from "react";
-import {
-  Modal,
-  Form,
-  Input,
-  Card,
-  Radio,
-  Space,
-  Button,
-  Tag,
-  message,
-} from "antd";
-import { FaPlus, FaMinus } from "react-icons/fa";
+import { FaMinus, FaPlus } from "react-icons/fa";
 import { getStatusColor } from "./sampleData";
+import { getImageUrl } from "../../common/imageUrl";
 // import { getStatusColor } from '../data/sampleData';
 
 const { TextArea } = Input;
+
+// Render allegations which may be a string or an array
+const renderAllegations = (allegations) => {
+  if (!allegations) return "Not specified";
+  if (Array.isArray(allegations)) {
+    return (
+      <ul className="list-disc pl-5">
+        {allegations.map((a, i) => (
+          <li key={i}>{a}</li>
+        ))}
+      </ul>
+    );
+  }
+  return allegations;
+};
+
+const getAllegationsFromRecord = (rec) => {
+  if (!rec) return null;
+  // rec may be the mapped table record or the raw server object
+  return (
+    rec.allegation ??
+    rec.allegations ??
+    rec.caseDetails?.allegation ??
+    rec.caseDetails?.allegations ??
+    rec.raw?.allegation ??
+    rec.raw?.caseDetails?.allegations ??
+    null
+  );
+};
 
 // PDF Content Generator
 const generatePDFContent = (record) => {
@@ -275,14 +295,14 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
         <Card title="Case Overview" className="shadow-sm">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <strong>Case ID:</strong> {selectedRecord.id}
+              <strong>Case ID:</strong> {selectedRecord.caseId}
             </div>
-            <div>
+            {/* <div>
               <strong>Status:</strong>{" "}
               <Tag color={getStatusColor(selectedRecord.status)}>
                 {selectedRecord.status}
               </Tag>
-            </div>
+            </div> */}
             <div>
               <strong>Initiator:</strong> {selectedRecord.initiatorName}
             </div>
@@ -292,15 +312,15 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
             <div>
               <strong>Email:</strong> {selectedRecord.email}
             </div>
-            <div>
+            {/* <div>
               <strong>Moderator:</strong> {selectedRecord.moderatorName}
-            </div>
+            </div> */}
             <div>
               <strong>Case Type:</strong> {selectedRecord.caseType}
             </div>
-            <div>
+            {/* <div>
               <strong>Submission Type:</strong> {selectedRecord.submissionType}
-            </div>
+            </div> */}
           </div>
         </Card>
 
@@ -321,10 +341,14 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
                     {selectedRecord.caseDetails.incidentDate}
                   </div>
                 )}
-                {selectedRecord.caseDetails.allegations && (
+                {(selectedRecord.caseDetails.allegation ||
+                  selectedRecord.caseDetails.allegations) && (
                   <div>
                     <strong>Allegations:</strong>{" "}
-                    {selectedRecord.caseDetails.allegations}
+                    {renderAllegations(
+                      selectedRecord.caseDetails.allegation ??
+                        selectedRecord.caseDetails.allegations
+                    )}
                   </div>
                 )}
                 {selectedRecord.caseDetails.evidence && (
@@ -336,17 +360,24 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
               </>
             )}
             <div>
-              <strong>Description:</strong>
+              <strong>Allegation:</strong>
               <div className="mt-2 p-4 bg-gray-50 rounded-md">
-                {selectedRecord.description}
+                {renderAllegations(
+                  getAllegationsFromRecord(selectedRecord.raw ?? selectedRecord)
+                )}
+              </div>
+            </div>
+            <div>
+              <strong>Evidence:</strong>
+              <div className="mt-2 p-4 bg-gray-50 rounded-md">
+                {getImageUrl(selectedRecord.evidence)}
               </div>
             </div>
           </div>
         </Card>
 
         {/* Case History */}
-        <Card title="Case History" className="shadow-sm">
-          {/* Proven Status */}
+        {/* <Card title="Case History" className="shadow-sm">
           {selectedRecord.status === "Proven" &&
             selectedRecord.provenReason && (
               <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
@@ -361,7 +392,6 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
               </div>
             )}
 
-          {/* Unable to Decide Status */}
           {selectedRecord.status === "Unable to Decide" &&
             selectedRecord.unableToDecideReason && (
               <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
@@ -378,8 +408,6 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
                 </div>
               </div>
             )}
-
-          {/* Disproven Status */}
           {selectedRecord.status === "Disproven" &&
             selectedRecord.disproveReason && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -394,7 +422,6 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
               </div>
             )}
 
-          {/* History Records */}
           {selectedRecord.history && selectedRecord.history.length > 0 ? (
             <div className="mt-4">
               <h4 className="font-medium mb-2">Previous Actions</h4>
@@ -421,7 +448,7 @@ export const PDFModal = ({ visible, onCancel, selectedRecord }) => (
           ) : (
             <div className="text-gray-500">No history records available.</div>
           )}
-        </Card>
+        </Card> */}
       </div>
     )}
   </Modal>
@@ -457,7 +484,7 @@ export const AcceptModal = ({ visible, onCancel, onOk, selectedRecord }) => {
       cancelText="Cancel"
     >
       {selectedRecord && (
-        <div className="space-y-4">
+        <div className="space-y-4 mb-6">
           <Card>
             <p className="text-lg mb-4">
               You are marking this case as <strong>Proven</strong>.
@@ -473,10 +500,10 @@ export const AcceptModal = ({ visible, onCancel, onOk, selectedRecord }) => {
                 <div>
                   <strong>Respondent:</strong> {selectedRecord.respondentName}
                 </div>
-                <div>
+                {/* <div>
                   <strong>Submission Type:</strong>{" "}
                   {selectedRecord.submissionType}
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -494,10 +521,10 @@ export const AcceptModal = ({ visible, onCancel, onOk, selectedRecord }) => {
               />
             </div>
 
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mt-8 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-700 text-sm">
                 <strong>Note:</strong> This decision will be recorded in the
-                case history and cannot be undone.
+                case history and cannot be undone or edit.
               </p>
             </div>
           </Card>
@@ -540,7 +567,7 @@ export const JuryModal = ({ visible, onCancel, onSubmit, selectedRecord }) => {
       cancelText="Cancel"
     >
       {selectedRecord && (
-        <div className="space-y-4">
+        <div className="space-y-4 mb-6">
           <Card title="Case Information">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -552,9 +579,9 @@ export const JuryModal = ({ visible, onCancel, onSubmit, selectedRecord }) => {
               <div>
                 <strong>Respondent:</strong> {selectedRecord.respondentName}
               </div>
-              <div>
+              {/* <div>
                 <strong>Status:</strong> {selectedRecord.status}
-              </div>
+              </div> */}
             </div>
           </Card>
 

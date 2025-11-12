@@ -144,50 +144,55 @@ const Home = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 h-auto">
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
-              <div className="flex flex-col items-baseline">
-                <h2 className="text-[16px] font-semibold mb-1">
-                  Total Report Submit
-                </h2>
-                <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
-                  <Sales className="w-[20px] h-[20px] text-secondary" />
-                  $4000
-                </h3>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-3">
+              <div className="bg-white border border-primary col-2 rounded-lg flex items-center justify-center p-4">
+                <div className="flex flex-col items-baseline">
+                  <h2 className="text-[16px] font-semibold mb-1">
+                    Total Report Vote
+                  </h2>
+                  <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
+                    <Sales className="w-[20px] h-[20px] text-secondary" />
+                    $4000
+                  </h3>
+                </div>
               </div>
             </div>
-
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
+            {/* <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
               <div className="flex flex-col items-baseline">
-                <h2 className="text-[16px] font-semibold mb-1">Total User</h2>
+                <h2 className="text-[16px] font-semibold mb-1">
+                  Total Complete
+                </h2>
                 <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
                   <People className="w-[20px] h-[20px] text-secondary" />
                   50
                 </h3>
               </div>
-            </div>
+            </div> */}
 
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
-              <div className="flex flex-col items-baseline">
-                <h2 className="text-[16px] font-semibold mb-1">
-                  Total Report Pending
-                </h2>
-                <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
-                  <Points className="w-[20px] h-[20px] text-secondary" />
-                  8,500
-                </h3>
+            <div className=" grid grid-cols-2 gap-3">
+              <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
+                <div className="flex flex-col items-baseline">
+                  <h2 className="text-[16px] font-semibold mb-1">
+                    Total Report Pending
+                  </h2>
+                  <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
+                    <Points className="w-[20px] h-[20px] text-secondary" />
+                    8,500
+                  </h3>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
-              <div className="flex flex-col items-baseline">
-                <h2 className="text-[16px] font-semibold mb-1">
-                  Total Revenue
-                </h2>
-                <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
-                  <Revenue className="w-[20px] h-[20px] text-secondary" />
-                  23
-                </h3>
+              <div className="bg-white border border-primary rounded-lg flex items-center justify-center p-4">
+                <div className="flex flex-col items-baseline">
+                  <h2 className="text-[16px] font-semibold mb-1">
+                    Total Revenue
+                  </h2>
+                  <h3 className="text-secondary text-[24px] font-semibold flex items-center gap-3">
+                    <Revenue className="w-[20px] h-[20px] text-secondary" />
+                    23
+                  </h3>
+                </div>
               </div>
             </div>
           </div>
