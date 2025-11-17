@@ -1,5 +1,4 @@
-import { Button, Tag, Tooltip } from "antd";
-import { getStatusColor } from "./sampleData";
+import { Button, Tooltip } from "antd";
 // import { getStatusColor } from "./sampleData";
 // import { getStatusColor } from "./sampleData";
 // import { getStatusColor } from '../data/sampleData';
@@ -92,12 +91,12 @@ export const TableColumns = (actionHandlers, user) => {
           const userEmail = user?.email || null;
           if (userId || userEmail) {
             hasVoted = jurorDecisions.some((d) => {
-              // Try multiple possible fields that may identify the juror
+              // Check if juror object exists with nested _id or if jurorId field exists
               return (
+                (d.juror?._id && String(d.juror._id) === String(userId)) ||
+                (d.juror?.email && d.juror.email === userEmail) ||
                 (d.jurorId && String(d.jurorId) === String(userId)) ||
-                (d.juror && String(d.juror) === String(userId)) ||
-                (d.jurorEmail && d.jurorEmail === userEmail) ||
-                (d.email && d.email === userEmail)
+                (d.jurorEmail && d.jurorEmail === userEmail)
               );
             });
           }

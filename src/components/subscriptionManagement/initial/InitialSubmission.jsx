@@ -33,7 +33,7 @@ const InitialSubmission = () => {
     { name: "limit", value: limit },
   ];
   if (searchText.trim()) {
-    queryParams.push({ name: "fastName", value: searchText.trim() });
+    queryParams.push({ name: "searchTerm", value: searchText.trim() });
   }
 
   // Filter data
@@ -147,6 +147,8 @@ const InitialSubmission = () => {
           {
             action: "ACCEPT",
             comment: explanation,
+            jurorId: user?.raw?._id || user?.raw?.id,
+            jurorEmail: user?.email,
           },
         ],
       };
@@ -198,6 +200,8 @@ const InitialSubmission = () => {
           {
             action,
             comment: explanation,
+            jurorId: user?.raw?._id || user?.raw?.id,
+            jurorEmail: user?.email,
           },
         ],
       };
@@ -277,6 +281,8 @@ const InitialSubmission = () => {
               {
                 action: "REJECT",
                 comment: explanation,
+                jurorId: user?.raw?._id || user?.raw?.id,
+                jurorEmail: user?.email,
               },
             ],
           };
