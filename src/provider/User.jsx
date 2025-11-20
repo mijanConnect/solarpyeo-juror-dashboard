@@ -56,7 +56,7 @@ export const UserProvider = ({ children }) => {
     // Map API response to the provider shape expected by consumers
     const mapped = {
       firstName:
-        profileData.name ||
+        profileData.firstName ||
         (profileData.email ? profileData.email.split("@")[0] : ""),
       lastName: "",
       email: profileData.email || "",

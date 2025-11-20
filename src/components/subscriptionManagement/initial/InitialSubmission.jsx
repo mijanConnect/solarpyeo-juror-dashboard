@@ -66,7 +66,9 @@ const InitialSubmission = () => {
     return items.map((item, index) => {
       const key = item._id || index;
       const caseId = item.caseId || "N/A";
-      const initiatorName = item.user?.name || "N/A";
+      const initiatorName =
+        [item.user?.firstName, item.user?.lastName].filter(Boolean).join(" ") ||
+        "N/A";
       const email = item.user?.email || "N/A";
       const respondentName =
         [

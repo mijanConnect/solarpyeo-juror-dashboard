@@ -7,7 +7,7 @@
 //   }
 // };
 export const getImageUrl = (path) => {
-  const baseUrl = import.meta?.env?.VITE_API_URL || "http://10.10.7.46:5000";
+  const baseUrl = import.meta?.env?.VITE_API_URL || "http://10.10.7.44:5000";
 
   // If path is missing or not a string, return a default placeholder
   if (!path || typeof path !== "string") {
