@@ -1,9 +1,7 @@
-import React, { useState } from "react";
-import { Table, DatePicker, Select, Card, Row, Col, Statistic, Tag } from "antd";
-import { DollarOutlined, TrophyOutlined, UserOutlined, ShoppingCartOutlined } from "@ant-design/icons";
+import { Alert, DatePicker, Spin, Table, Tag } from "antd";
 import moment from "moment";
-
-const { Option } = Select;
+import { useMemo, useState } from "react";
+import { useReportEarningsQuery } from "../../redux/apiSlices/earningSlice";
 const { RangePicker } = DatePicker;
 
 const components = {
@@ -37,109 +35,81 @@ const components = {
 };
 
 const TotalEarnings = () => {
-  const [dateRange, setDateRange] = useState("February 2025");
-  const [data] = useState([
-    {
-      id: 1,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 2,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 3,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 4,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 5,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 6,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 7,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
-    {
-      id: 8,
-      initiatorName: "Dr. John Doe",
-      email: "example@email.com",
-      respondentName: "Dr. John Doe",
-      caseType: "Standard Case",
-      moderatorName: "Dr. John Doe",
-      jurorVote: "3 of 3",
-      revenue: "$10.00",
-      status: "Running",
-    },
+  // default to the current year (show full-year data on first load)
+  // but keep the picker empty initially via `pickerRange`
+  const [dateRange, setDateRange] = useState([
+    moment().startOf("year"),
+    moment().endOf("year"),
   ]);
+  const [pickerRange, setPickerRange] = useState([null, null]);
 
-  // Calculate total revenue
-  const totalRevenue = data.reduce((sum, item) => {
-    const amount = parseFloat(item.revenue.replace('$', ''));
-    return sum + amount;
-  }, 0);
+  // query the report earnings endpoint
+  const startDate =
+    dateRange && dateRange[0]
+      ? moment(dateRange[0]).format("YYYY-MM-DD")
+      : null;
+  const endDate =
+    dateRange && dateRange[1]
+      ? moment(dateRange[1]).format("YYYY-MM-DD")
+      : null;
+
+  const {
+    data: earningsResp,
+    isLoading: earningsLoading,
+    isError: earningsError,
+  } = useReportEarningsQuery(
+    { startDate, endDate },
+    { skip: !startDate || !endDate }
+  );
+
+  // Pull total earning from API response (API returns data.totalEarning)
+  const totalEarnings = useMemo(() => {
+    return earningsResp?.data?.totalEarning ?? 0;
+  }, [earningsResp]);
+
+  // map API paymentDetails to table rows
+  const tableData = useMemo(() => {
+    const details = earningsResp?.data?.paymentDetails || [];
+    return details.map((p, idx) => {
+      const submission = p.submissionId || {};
+      const user = p.submissionId?.user || {};
+      const caseId = submission.caseId;
+      const respondentName = [
+        submission.respondentFastName,
+        submission.respondentMiddleName,
+        submission.respondentLastName,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const decisions = Array.isArray(submission.jurorDecisions)
+        ? submission.jurorDecisions
+        : [];
+      // If total jurors count is provided use it, otherwise assume equal to decisions length
+      const totalJurors = submission.jurorCount ?? decisions.length;
+      const jurorVote = `${decisions.length} of ${totalJurors}`;
+
+      return {
+        serial: idx + 1,
+        id: p._id || idx + 1,
+        initiatorName: user.firstName + " " + user.lastName || "N/A",
+        email: user.email || "N/A",
+        respondentName: respondentName || "N/A",
+        caseType: submission.submittionType || "N/A",
+        caseId: caseId || "N/A",
+        jurorVote,
+        revenue: `$${(p.price || 0).toFixed(2)}`,
+        status: p.paymentStatus || submission.status || "N/A",
+      };
+    });
+  }, [earningsResp]);
+
+  // (totalRevenue computed from API rows via useMemo above)
 
   const columns = [
     {
       title: "SL",
-      dataIndex: "id",
-      key: "id",
+      dataIndex: "serial",
+      key: "serial",
       align: "center",
       width: 60,
     },
@@ -162,15 +132,15 @@ const TotalEarnings = () => {
       align: "center",
     },
     {
-      title: "Case Type",
+      title: "Submission Type",
       dataIndex: "caseType",
       key: "caseType",
       align: "center",
     },
     {
-      title: "Moderator Name",
-      dataIndex: "moderatorName",
-      key: "moderatorName",
+      title: "Case ID",
+      dataIndex: "caseId",
+      key: "caseId",
       align: "center",
     },
     {
@@ -203,8 +173,12 @@ const TotalEarnings = () => {
     <div className="">
       {/* Header */}
       <div className="">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Total Earnings</h1>
-        <p className="text-gray-600">Track and monitor your revenue and earnings</p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Total Earnings
+        </h1>
+        <p className="text-gray-600">
+          Track and monitor your revenue and earnings
+        </p>
       </div>
 
       {/* Statistics Cards */}
@@ -257,51 +231,62 @@ const TotalEarnings = () => {
 
       {/* Date Range Filter */}
       <div className="mb-2 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          {/* <span className="text-sm font-medium">Date Range:</span> */}
-          <Select
-            value={dateRange}
-            onChange={setDateRange}
-            style={{ width: 150 }}
-          >
-            <Option value="February 2025">February 2025</Option>
-            <Option value="January 2025">January 2025</Option>
-            <Option value="December 2024">December 2024</Option>
-            <Option value="November 2024">November 2024</Option>
-          </Select>
-        </div>
+        <RangePicker
+          className="min-w-[200px] sm:w-[250px]"
+          placeholder={["Start Date", "End Date"]}
+          value={pickerRange}
+          onChange={(vals) => {
+            if (!vals) {
+              // clear picker and revert table/query to present year
+              setPickerRange([null, null]);
+              setDateRange([moment().startOf("year"), moment().endOf("year")]);
+              return;
+            }
+            // show selected in picker and normalize to day bounds for API
+            setPickerRange(vals);
+            setDateRange([vals[0].startOf("day"), vals[1].endOf("day")]);
+          }}
+          format="YYYY-MM-DD"
+          allowClear={true}
+        />
         <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-          <span className="text-sm text-blue-600 font-medium">Total Revenue: </span>
-          <span className="text-lg font-bold text-blue-700">${totalRevenue.toFixed(2)}</span>
+          <span className="text-sm text-blue-600 font-medium">
+            Total Revenue:{" "}
+          </span>
+          <span className="text-lg font-bold text-blue-700">
+            ${totalEarnings.toFixed(2)}
+          </span>
         </div>
       </div>
 
       {/* Earnings Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <Table
-          components={components}
-          columns={columns}
-          dataSource={data}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            // showSizeChanger: true,
-            // showQuickJumper: true,
-            // showTotal: (total, range) =>
-            //   `${range[0]}-${range[1]} of ${total} items`,
-          }}
-          scroll={{ x: 'max-content' }}
-          // rowSelection={{
-          //   type: 'checkbox',
-          //   onChange: (selectedRowKeys, selectedRows) => {
-          //     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-          //   },
-          // }}
-          className="custom-table"
-
-        />
+      <div style={{ overflowX: "auto" }}>
+        {earningsLoading ? (
+          <div className="w-full flex justify-center py-8">
+            <Spin size="large" />
+          </div>
+        ) : earningsError ? (
+          <Alert
+            message="Failed to load earnings"
+            description={earningsResp?.message || undefined}
+            type="error"
+            showIcon
+            className="my-4"
+          />
+        ) : (
+          <Table
+            components={components}
+            columns={columns}
+            dataSource={tableData}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+            }}
+            scroll={{ x: "max-content" }}
+            className="custom-table"
+          />
+        )}
       </div>
-  
     </div>
   );
 };
