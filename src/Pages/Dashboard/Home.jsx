@@ -28,6 +28,25 @@ const Home = () => {
 
   const options2 = ["Today", "Last 7 Days", "Last 30 Days", "This Month"];
 
+  // Map selected option to API range parameter
+  const rangeMap = {
+    Today: "1d",
+    "Last 7 Days": "7d",
+    "Last 30 Days": "30d",
+    "This Month": "1m",
+  };
+
+  const selectedRange = rangeMap[selected] || "7d";
+
+  // Fetch overview statistics with range parameter
+  const queryParams = [{ name: "range", value: selectedRange }];
+
+  const {
+    data: statsResp,
+    isLoading: statsLoading,
+    isError: statsError,
+  } = useStatsQuery(queryParams);
+
   const data = {
     labels: [
       "Jan",
@@ -86,12 +105,6 @@ const Home = () => {
     },
   };
 
-  // Fetch overview statistics
-  const {
-    data: statsResp,
-    isLoading: statsLoading,
-    isError: statsError,
-  } = useStatsQuery();
   const stats = statsResp?.data || {};
   const formatNumber = (n) =>
     typeof n === "number" ? n.toLocaleString() : n || 0;
