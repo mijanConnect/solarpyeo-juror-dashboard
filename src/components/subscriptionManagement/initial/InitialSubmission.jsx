@@ -13,6 +13,7 @@ import {
   PDFModal,
 } from "./GeneratePDFContent ";
 import { sampleData } from "./sampleData";
+import InitialCustomPdfModal from "./CustomPdfModal";
 
 const { Option } = Select;
 
@@ -98,6 +99,7 @@ const InitialSubmission = () => {
         email,
         respondentName,
         caseType,
+        caseId,
         moderatorName: item.moderatorName || "N/A",
         jurorVote,
         allegation,
@@ -362,9 +364,6 @@ const InitialSubmission = () => {
           >
             <Option value="All">All Status</Option>
             <Option value="Pending">Pending</Option>
-            <Option value="Under Jury Review">Under Jury Review</Option>
-            <Option value="Final Review">Final Review</Option>
-            <Option value="Rejected">Rejected</Option>
             <Option value="Completed">Completed</Option>
           </Select>
         </div>
@@ -386,7 +385,13 @@ const InitialSubmission = () => {
       </div>
 
       {/* Modals */}
-      <PDFModal
+      {/* <PDFModal
+        visible={isPDFModalVisible}
+        onCancel={() => setIsPDFModalVisible(false)}
+        selectedRecord={selectedRecord}
+      /> */}
+
+      <InitialCustomPdfModal
         visible={isPDFModalVisible}
         onCancel={() => setIsPDFModalVisible(false)}
         selectedRecord={selectedRecord}

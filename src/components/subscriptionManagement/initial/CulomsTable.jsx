@@ -51,9 +51,9 @@ export const TableColumns = (actionHandlers, user) => {
       align: "center",
     },
     {
-      title: "Case Type",
-      dataIndex: "caseType",
-      key: "caseType",
+      title: "Case ID",
+      dataIndex: "caseId",
+      key: "caseId",
       align: "center",
     },
     // {

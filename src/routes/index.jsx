@@ -53,7 +53,6 @@ import ShopInfo from "../Pages/Auth/ShopInfo";
 import TotalEarnings from "../components/TotalEarnings/TotalEarnings";
 import SubmissionManagementCom from "../components/subscriptionManagement/SubmissionManagement";
 import PrivateRoute from "./ProtectedRoute";
-// import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
   {
