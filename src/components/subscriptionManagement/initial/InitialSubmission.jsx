@@ -61,60 +61,92 @@ const InitialSubmission = () => {
 
   console.log(resp);
 
+  const { user } = useUser();
+  const [jurySubmission] = useJurySubmissionMutation();
+
   // Map server response to table-friendly shape
   const tableData = useMemo(() => {
     const items = resp?.data || [];
-    return items.map((item, index) => {
-      const key = item._id || index;
-      const caseId = item.caseId || "N/A";
-      const initiatorName =
-        [item.user?.firstName, item.user?.lastName].filter(Boolean).join(" ") ||
-        "N/A";
-      const email = item.user?.email || "N/A";
-      const respondentName =
-        [
-          item.respondentFastName,
-          item.respondentMiddleName,
-          item.respondentLastName,
-        ]
-          .filter(Boolean)
-          .join(" ") || "N/A";
-      const caseType = item.typeOfFiling || item.caseId || "N/A";
-      const jurorVote = (item.jurorDecisions?.length || 0) + " of 3";
-      const allegation =
-        item.allegation ?? item.caseDetails?.allegations ?? "N/A";
-      const evidence = item.evidence || "N/A";
-      const humanStatus = (item.status || "")
-        .toLowerCase()
-        .replace(/_/g, " ")
-        .split(" ")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(" ");
+    const userId = user?.raw?._id || user?.raw?.id || null;
+    const userEmail = user?.email || null;
 
-      return {
-        key: item._id,
-        caseId,
-        id: (page - 1) * limit + index + 1,
-        initiatorName,
-        email,
-        respondentName,
-        caseType,
-        caseId,
-        moderatorName: item.moderatorName || "N/A",
-        jurorVote,
-        allegation,
-        evidence,
-        status: humanStatus,
-        // keep original machine status for control logic (e.g., PENDING/APPROVED/REJECTED)
-        machineStatus: (item.status || "").toString(),
-        jurorCount: item.jurorDecisions?.length || 0,
-        raw: item,
-      };
-    });
-  }, [resp, page, limit]);
+    return items
+      .map((item, index) => {
+        const key = item._id || index;
+        const caseId = item.caseId || "N/A";
+        const initiatorName =
+          [item.user?.firstName, item.user?.lastName]
+            .filter(Boolean)
+            .join(" ") || "N/A";
+        const email = item.user?.email || "N/A";
+        const respondentName =
+          [
+            item.respondentFastName,
+            item.respondentMiddleName,
+            item.respondentLastName,
+          ]
+            .filter(Boolean)
+            .join(" ") || "N/A";
+        const caseType = item.typeOfFiling || item.caseId || "N/A";
+        const jurorVote = (item.jurorDecisions?.length || 0) + " of 3";
+        const allegation =
+          item.allegation ?? item.caseDetails?.allegations ?? "N/A";
+        const evidence = item.evidence || "N/A";
+        const humanStatus = (item.status || "")
+          .toLowerCase()
+          .replace(/_/g, " ")
+          .split(" ")
+          .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+          .join(" ");
 
-  const { user } = useUser();
-  const [jurySubmission] = useJurySubmissionMutation();
+        // Check if logged-in user has already voted (same logic as table action buttons)
+        const jurorDecisions = item.jurorDecisions || item.juryFeedback || [];
+        let userHasVoted = false;
+        try {
+          if (userId || userEmail) {
+            userHasVoted = jurorDecisions.some((d) => {
+              return (
+                (d.juror?._id && String(d.juror._id) === String(userId)) ||
+                (d.juror?.email && d.juror.email === userEmail) ||
+                (d.jurorId && String(d.jurorId) === String(userId)) ||
+                (d.jurorEmail && d.jurorEmail === userEmail)
+              );
+            });
+          }
+        } catch (e) {
+          userHasVoted = false;
+        }
+
+        return {
+          key: item._id,
+          id: (page - 1) * limit + index + 1,
+          initiatorName,
+          email,
+          respondentName,
+          caseType,
+          caseId,
+          moderatorName: item.moderatorName || "N/A",
+          jurorVote,
+          allegation,
+          evidence,
+          status: humanStatus,
+          // keep original machine status for control logic (e.g., PENDING/APPROVED/REJECTED)
+          machineStatus: (item.status || "").toString(),
+          jurorCount: item.jurorDecisions?.length || 0,
+          userHasVoted,
+          raw: item,
+        };
+      })
+      .filter((item) => {
+        // Filter based on submission type (Pending/Completed)
+        if (submissionType === "Pending") {
+          return !item.userHasVoted;
+        } else if (submissionType === "Completed") {
+          return item.userHasVoted;
+        }
+        return true; // "All" shows everything
+      });
+  }, [resp, page, limit, submissionType, user]);
 
   // Modal handlers
   const showPDFModal = (record) => {
