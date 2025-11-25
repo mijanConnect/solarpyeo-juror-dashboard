@@ -99,12 +99,14 @@ const InitialSubmission = () => {
           .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
           .join(" ");
 
-        // Check if logged-in user has already voted (same logic as table action buttons)
+        // Check if logged-in user has already voted and get their action
         const jurorDecisions = item.jurorDecisions || item.juryFeedback || [];
         let userHasVoted = false;
+        let userDecisionAction = null;
+
         try {
           if (userId || userEmail) {
-            userHasVoted = jurorDecisions.some((d) => {
+            const userDecision = jurorDecisions.find((d) => {
               return (
                 (d.juror?._id && String(d.juror._id) === String(userId)) ||
                 (d.juror?.email && d.juror.email === userEmail) ||
@@ -112,9 +114,15 @@ const InitialSubmission = () => {
                 (d.jurorEmail && d.jurorEmail === userEmail)
               );
             });
+
+            if (userDecision) {
+              userHasVoted = true;
+              userDecisionAction = userDecision.action;
+            }
           }
         } catch (e) {
           userHasVoted = false;
+          userDecisionAction = null;
         }
 
         return {
@@ -134,15 +142,23 @@ const InitialSubmission = () => {
           machineStatus: (item.status || "").toString(),
           jurorCount: item.jurorDecisions?.length || 0,
           userHasVoted,
+          userDecisionAction,
           raw: item,
         };
       })
       .filter((item) => {
         // Filter based on submission type (Pending/Completed)
         if (submissionType === "Pending") {
-          return !item.userHasVoted;
+          // Pending: user hasn't provided any decision action
+          return !item.userDecisionAction;
         } else if (submissionType === "Completed") {
-          return item.userHasVoted;
+          // Completed: user has any action (ACCEPT, REJECT, UNABLETODECIDE, etc.)
+          return (
+            item.userDecisionAction &&
+            (item.userDecisionAction === "ACCEPT" ||
+              item.userDecisionAction === "REJECT" ||
+              item.userDecisionAction === "UNABLETODECIDE")
+          );
         }
         return true; // "All" shows everything
       });
