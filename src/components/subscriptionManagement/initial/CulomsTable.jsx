@@ -93,7 +93,9 @@ export const TableColumns = (actionHandlers, user) => {
       render: (_, record) => {
         // Determine if the current logged-in user has already voted on this record
         const jurorDecisions =
-          record.raw?.jurorDecisions || record.raw?.juryFeedback || [];
+          record.raw?.submission?.jurorDecisions ||
+          record.raw?.juryFeedback ||
+          [];
 
         let hasVoted = false;
         try {

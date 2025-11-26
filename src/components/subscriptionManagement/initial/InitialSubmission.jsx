@@ -102,7 +102,8 @@ const InitialSubmission = () => {
           .join(" ");
 
         // Check if logged-in user has already voted and get their action
-        const jurorDecisions = item.jurorDecisions || item.juryFeedback || [];
+        const jurorDecisions =
+          item?.submission?.jurorDecisions || item.juryFeedback || [];
         let userHasVoted = false;
         let userDecisionAction = null;
 
@@ -142,7 +143,7 @@ const InitialSubmission = () => {
           evidence,
           status: humanStatus,
           machineStatus: (item.status || "").toString(),
-          jurorCount: item.jurorDecisions?.length || 0,
+          jurorCount: item?.submission?.jurorDecisions?.length || 0,
           userHasVoted,
           userDecisionAction,
           raw: item,
