@@ -1,4 +1,4 @@
-import { Button, Tooltip } from "antd";
+import { Button, Tag, Tooltip } from "antd";
 // import { getStatusColor } from "./sampleData";
 // import { getStatusColor } from "./sampleData";
 // import { getStatusColor } from '../data/sampleData';
@@ -67,6 +67,16 @@ export const TableColumns = (actionHandlers, user) => {
       dataIndex: "jurorVote",
       key: "jurorVote",
       align: "center",
+    },
+    {
+      title: "Priority",
+      dataIndex: "priority",
+      key: "priority",
+      align: "center",
+      render: (priority) => {
+        const color = priority === "EXPEDITED" ? "red" : "blue";
+        return <Tag color={color}>{priority}</Tag>;
+      },
     },
     // {
     //   title: "Status",

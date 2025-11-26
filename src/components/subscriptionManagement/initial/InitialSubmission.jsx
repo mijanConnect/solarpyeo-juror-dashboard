@@ -73,24 +73,26 @@ const InitialSubmission = () => {
     return items
       .map((item, index) => {
         const key = item._id || index;
-        const caseId = item.caseId || "N/A";
+        const caseId = item?.submission?.caseId || "N/A";
         const initiatorName =
-          [item.user?.firstName, item.user?.lastName]
+          [item.user?.firstName, item?.user?.middleName, item.user?.lastName]
             .filter(Boolean)
             .join(" ") || "N/A";
         const email = item.user?.email || "N/A";
         const respondentName =
           [
-            item.respondentFastName,
-            item.respondentMiddleName,
-            item.respondentLastName,
+            item?.submission?.respondentFastName,
+            item?.submission?.respondentMiddleName,
+            item?.submission?.respondentLastName,
           ]
             .filter(Boolean)
             .join(" ") || "N/A";
         const caseType = item.typeOfFiling || item.caseId || "N/A";
-        const jurorVote = (item.jurorDecisions?.length || 0) + " of 3";
+        const jurorVote =
+          (item?.submission?.jurorDecisions?.length || 0) + " of 3";
         const allegation =
           item.allegation ?? item.caseDetails?.allegations ?? "N/A";
+        const priority = item.priority || "N/A";
         const evidence = item.evidence || "N/A";
         const humanStatus = (item.status || "")
           .toLowerCase()
@@ -133,12 +135,12 @@ const InitialSubmission = () => {
           respondentName,
           caseType,
           caseId,
+          priority,
           moderatorName: item.moderatorName || "N/A",
           jurorVote,
           allegation,
           evidence,
           status: humanStatus,
-          // keep original machine status for control logic (e.g., PENDING/APPROVED/REJECTED)
           machineStatus: (item.status || "").toString(),
           jurorCount: item.jurorDecisions?.length || 0,
           userHasVoted,
