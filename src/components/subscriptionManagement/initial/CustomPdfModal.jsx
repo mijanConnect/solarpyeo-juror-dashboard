@@ -276,7 +276,7 @@ export default function InitialCustomPdfModal({
         </div>
       }
       width={800}
-      title={selectedRecord?.caseType || "Submission PDF"}
+      title={"Submission PDF"}
     >
       <div id="custom-pdf-content">
         {/* Case ID */}
