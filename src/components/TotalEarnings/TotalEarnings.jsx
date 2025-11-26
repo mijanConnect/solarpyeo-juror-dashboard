@@ -91,13 +91,14 @@ const TotalEarnings = () => {
       return {
         serial: idx + 1,
         id: p._id || idx + 1,
-        initiatorName: user.firstName + " " + user.lastName || "N/A",
+        initiatorName:
+          user.firstName + " " + user.middleName + " " + user.lastName || "N/A",
         email: user.email || "N/A",
         respondentName: respondentName || "N/A",
         caseType: submission.submittionType || "N/A",
         caseId: caseId || "N/A",
         jurorVote,
-        revenue: `$${(p.price || 0).toFixed(2)}`,
+        revenue: `$${p.price || 0}`,
         status: p.paymentStatus || submission.status || "N/A",
       };
     });
@@ -254,7 +255,7 @@ const TotalEarnings = () => {
             Total Revenue:{" "}
           </span>
           <span className="text-lg font-bold text-blue-700">
-            ${totalEarnings.toFixed(2)}
+            ${totalEarnings}
           </span>
         </div>
       </div>
