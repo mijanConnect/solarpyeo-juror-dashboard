@@ -8,10 +8,25 @@ import { defineConfig } from "vite";
 //     port: 3016,
 //   },
 // });
+
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: "https://admin.glassfile.xyz/",
-    port: 3016,
+    host: true, // allows access from outside (e.g., EC2, domain)
+    port: 5175, // dev server port
+    allowedHosts: ["juror.glassfile.xyz"], // dev server
+  },
+  preview: {
+    host: true, // allow preview access externally
+    port: 4174, // optional, default is 4173
+    allowedHosts: ["juror.glassfile.xyz"], // must add host here for preview
   },
 });
+
+// export default defineConfig({
+//   plugins: [react()],
+//   server: {
+//     host: "https://juror.glassfile.xyz/",
+//     port: 3016,
+//   },
+// });
